@@ -15,6 +15,7 @@ import json
 from os.path import realpath, dirname, join
 import time
 import atexit
+from pathlib import Path
 
 MESSAGE_TYPE = 0
 MULTIMEDIA_MESSAGE_TYPE = 1
@@ -26,11 +27,17 @@ SIP_ENDPOINT = "prod.tncp.textnow.com"
 
 
 class Client:
-    def __init__(self, username: str = None, sid_cookie=None, csrf_cookie=None):
+    def __init__(self, username: str = None, sid_cookie=None, csrf_cookie=None, user_cookies_file=None):
         # Load SIDS
         self._user_cookies = {}
         self._good_parse = False
-        self._user_cookies_file = join(dirname(realpath(__file__)), 'user_cookies.json')
+        self._user_cookies_file = user_cookies_file
+
+        if user_cookies_file is None:
+            self._user_cookies_file = join(dirname(realpath(__file__)), 'user_cookies.json')
+        elif not user_cookies_file.exists():
+            self._user_cookies_file.parent.mkdir(0o755, True, True)
+            self._user_cookies_file.write_text(r"{}")
 
         try:
             with open(self._user_cookies_file, 'r') as file:
